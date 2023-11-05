@@ -1,7 +1,16 @@
 import React, { Suspense } from 'react';
 import { Canvas } from "@react-three/fiber";
 import "./style.css";
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import {
+  EffectComposer,
+  DepthOfField,
+  Bloom,
+  ChromaticAberration,
+} from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
+import { CubeCamera, Environment, OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { Ground } from './Ground';
+import { Car } from './Car';
 
 function ModelViewer(){
   return (
@@ -14,6 +23,16 @@ function ModelViewer(){
 
       {/* background color */}
       <color args={[0, 0, 0]} attach="background" />
+
+      {/* Cube Camera */}
+      <CubeCamera resolution={256} frames={Infinity}>
+        {(texture) => (
+          <>
+            <Environment map={texture} />
+            <Car />
+          </>
+        )}
+      </CubeCamera>
 
       {/* spotlights */}
       <spotLight
@@ -34,6 +53,24 @@ function ModelViewer(){
         castShadow
         shadow-bias={-0.0001}
       />
+      <Ground />
+
+      <EffectComposer>
+        {/* <DepthOfField focusDistance={0.0035} focalLength={0.01} bokehScale={3} height={480} /> */}
+        <Bloom
+          blendFunction={BlendFunction.ADD}
+          intensity={1.3} // The bloom intensity.
+          width={300} // render width
+          height={300} // render height
+          kernelSize={5} // blur kernel size
+          luminanceThreshold={0.15} // luminance threshold. Raise this value to mask out darker elements in the scene.
+          luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
+        />
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL} // blend mode
+          offset={[0.0005, 0.0012]} // color offset
+        />
+      </EffectComposer>
     </>
   )
 }
